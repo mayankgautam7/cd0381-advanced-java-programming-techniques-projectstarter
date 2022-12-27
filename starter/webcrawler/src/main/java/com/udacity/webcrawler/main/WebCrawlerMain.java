@@ -45,7 +45,10 @@ public final class WebCrawlerMain {
       resultWriter.write(Path.of(resultPath));
     }
     else {
-      resultWriter.write(new OutputStreamWriter(System.out));
+      try(Writer writer = new OutputStreamWriter(System.out))
+      {
+        resultWriter.write(writer);
+      }
     }
 
 
@@ -56,7 +59,10 @@ public final class WebCrawlerMain {
       profiler.writeData(Path.of(profilerPath));
     }
     else{
-      profiler.writeData(new OutputStreamWriter(System.out));
+      try(Writer writer = new OutputStreamWriter(System.out))
+      {
+        profiler.writeData(writer);
+      }
     }
   }
 

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ public class ParallelTaskCrawl extends RecursiveTask
     private final Instant deadline;
     private final int maxDepth;
     private final List<Pattern> ignoredUrls;
+    public static ReentrantLock lock = new ReentrantLock();
 
     private final Map<String, Integer> countMap;
     private final ConcurrentSkipListSet<String> visitedUrls;
@@ -52,12 +54,22 @@ public class ParallelTaskCrawl extends RecursiveTask
                 return false;
             }
         }
-
-        if(visitedUrls.contains(url))
+        try
         {
-            return false;
+            //lock.lock();
+            if(!visitedUrls.add(url))
+            {
+                return false;
+            }
+            visitedUrls.add(url);
         }
-        visitedUrls.add(url);
+        catch (Exception ex)
+        {
+            throw ex;
+        }finally {
+            //lock.unlock();
+        }
+
         PageParser.Result result = parserFactory.get(url).parse();
 
         for(Map.Entry<String, Integer> e : result.getWordCounts().entrySet())
