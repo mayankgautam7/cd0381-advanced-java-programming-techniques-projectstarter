@@ -25,7 +25,6 @@ public class ParallelTaskCrawl extends RecursiveTask
     private final int maxDepth;
     private final List<Pattern> ignoredUrls;
     public static ReentrantLock lock = new ReentrantLock();
-
     private final Map<String, Integer> countMap;
     private final ConcurrentSkipListSet<String> visitedUrls;
 
@@ -54,23 +53,23 @@ public class ParallelTaskCrawl extends RecursiveTask
                 return false;
             }
         }
+        PageParser.Result result = null;
         try
         {
-            //lock.lock();
+            lock.lock();
             if(!visitedUrls.add(url))
             {
                 return false;
             }
             visitedUrls.add(url);
+            result = parserFactory.get(url).parse();
         }
         catch (Exception ex)
         {
             throw ex;
         }finally {
-            //lock.unlock();
+            lock.unlock();
         }
-
-        PageParser.Result result = parserFactory.get(url).parse();
 
         for(Map.Entry<String, Integer> e : result.getWordCounts().entrySet())
         {
